@@ -90,3 +90,4 @@ def transform_data():
         'FacilitiesAndServices4', 'FacilitiesAndServices5']
     restaurants_cleaned.columns = cols
     restaurants_cleaned.to_csv('./data_cleaned/restaurants_cleaned.csv')
+    print('Data transformation done.')

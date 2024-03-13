@@ -20,6 +20,8 @@ def load_data():
             df.to_sql(name='restaurants', con=connection, if_exists='replace')
 
             print(pd.io.sql.get_schema(df, name='restaurants', con=connection))
+            
+            print('Data loading done.')
 
     except Exception as e:
         print("Connection failed:", e)
