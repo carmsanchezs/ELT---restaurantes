@@ -4,8 +4,7 @@ from sqlalchemy import create_engine
 
 def load_data():
     # read the data
-    df = pd.read_csv(r"./data_cleaned/restaurants_cleaned.csv")
-    df.set_index('id', inplace=True)
+    df = pd.read_csv(r"data_cleaned/restaurants_cleaned.csv", index_col=0)
 
     # connect to the database
     connection_string = "mysql+mysqlconnector://<user>:<password>@<host>:<port>/<database>"
@@ -20,7 +19,7 @@ def load_data():
             df.to_sql(name='restaurants', con=connection, if_exists='replace')
 
             print(pd.io.sql.get_schema(df, name='restaurants', con=connection))
-            
+
             print('Data loading done.')
 
     except Exception as e:
