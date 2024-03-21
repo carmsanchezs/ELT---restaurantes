@@ -2,10 +2,10 @@
 # coding: utf-8
 
 import pandas as pd
-import re
 
 
 def set_category(price):
+    """Set a price category depends of the characters in price"""
     if price == '$':
         return 'Muy Barato'
     elif price == '$$':
@@ -21,73 +21,64 @@ def set_category(price):
 
 
 def transform_data():
-    # read the data
-    original_df = pd.read_csv(
-        './ods/michelin_my_maps.csv',
-        dtype={'PhoneNumber': str}
+    """Change the necesary data, like location, price, cuisine, etc.
+       based in business rules."""
+    # read data
+    restaurants = pd.read_csv('ods/michelin_my_maps.csv',
+                              index_col=0,
+                              dtype={'PhoneNumber': str})
+
+    # filtering by Award: 1 Star, 2 Stars, 3 Stars
+    restaurants = restaurants[restaurants.Award.isin(
+        ['3 Stars', '2 Stars', '1 Star']
+    )]
+
+    # split Location and Country
+    restaurants[['Location2',
+                'Country']] = restaurants.Location.str.split(',', expand=True)
+
+    # categorize Price
+    restaurants['Price'] = restaurants.Price.str.replace(
+        '[¥€£₩฿₺₫]',
+        '$',
+        regex=True
     )
 
-    # make a copy of the original data frame
-    restaurants_df = original_df.copy(deep=True)
+    restaurants['PriceCategory'] = restaurants.Price.apply(set_category)
 
-    # set an index
-    restaurants_df.rename(columns={'Unnamed: 0': 'id'}, inplace=True)
-    restaurants_df.set_index('id', inplace=True)
-
-    # ### Location2 and country
-    restaurants_df[['Location2', 'Country']] = restaurants_df.Location.apply(
-        lambda s: pd.Series(s.strip().split(","))
+    # spit Cuisine
+    restaurants[['Cuisine1', 'Cuisine2']] = restaurants.Cuisine.str.replace(
+            '/', ','
+        ).str.split(
+            ',', expand=True
         )
 
-    # ### price
-    # replace in order to have only $ 
-    pattern = re.compile('[¥€£₩฿₺₫]')
-    restaurants_df['Price'] = restaurants_df.Price.apply(
-        lambda s: pd.Series(pattern.sub('$', str(s)))
-        )
+    # Working with "FacilitiesAndServices" to divide it into a maximun of 5 columns
+    restaurants[
+        ['FacilitiesAndServices1',
+        'FacilitiesAndServices2',
+        'FacilitiesAndServices3',
+        'FacilitiesAndServices4',
+        'FacilitiesAndServices5']] = restaurants.FacilitiesAndServices.str.split(
+            ',', expand=True
+        ).iloc[:, :5]
 
-    restaurants_df['PriceCategory'] = restaurants_df.Price.apply(set_category)
 
-    # ### Cuisine
-    # replacing / by ,
-    restaurants_df['Cuisine'] = restaurants_df.Cuisine.apply(
-        lambda s: pd.Series(s.replace('/', ','))
-        )
-    # split the value of Cuisene
-    restaurants_df[['Cuisine1', 'Cuisine2']] = restaurants_df.Cuisine.apply(
-        lambda s: pd.Series(s.strip().split(','))
-        )
+    # Save the cleaned data to a CSV file
+    # drop columns
+    restaurants.drop(['Location', 'Price', 'Cuisine', 'FacilitiesAndServices'],
+                     axis=1,
+                     inplace=True)
 
-    # ### Filtering by 'Award': 1 Start, 2 Starts, 3 Starts
-
-    restaurants_123 = restaurants_df[restaurants_df.Award.isin(
-            ['3 Stars', '2 Stars', '1 Star']
-        )]
-
-    # ### Working with "FacilitiesAndServices" to divide it into 
-    # a maximun of five columns
-    restaurants_123[
-        ['FacilitiesAndServices1', 
-        'FacilitiesAndServices2', 
-        'FacilitiesAndServices3', 
-        'FacilitiesAndServices4', 
-        'FacilitiesAndServices5']] = restaurants_123.FacilitiesAndServices.apply(
-            lambda s: pd.Series(str(s).strip().split(',')).iloc[:5]
-            )
-
-    # save the cleaned data to a CSV file
-    restaurants_cleaned = restaurants_123[['Name', 'Address', 'Longitude',
-        'Latitude', 'PhoneNumber', 'Url', 'WebsiteUrl', 'Award', 'Description',
-        'Location2', 'Country',
-        'PriceCategory', 'Cuisine1', 'Cuisine2', 'FacilitiesAndServices1',
-        'FacilitiesAndServices2', 'FacilitiesAndServices3',
-        'FacilitiesAndServices4', 'FacilitiesAndServices5']]
+    # redefining columns
     cols = ['Name', 'Address', 'Longitude',
         'Latitude', 'PhoneNumber', 'Url', 'WebsiteUrl', 'Award', 'Description',
         'Location', 'Country',
         'Price', 'Cuisine1', 'Cuisine2', 'FacilitiesAndServices1',
         'FacilitiesAndServices2', 'FacilitiesAndServices3',
         'FacilitiesAndServices4', 'FacilitiesAndServices5']
-    restaurants_cleaned.columns = cols
-    restaurants_cleaned.to_csv('./data_cleaned/restaurants_cleaned.csv')
+
+    restaurants.columns = cols
+    restaurants.index.names = ['id']
+    restaurants.to_csv('./data_cleaned/restaurants_cleaned.csv')
     print('Data transformation done.')
