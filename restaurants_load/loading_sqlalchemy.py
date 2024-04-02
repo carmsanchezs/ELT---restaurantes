@@ -1,7 +1,9 @@
 import pandas as pd
 from sqlalchemy import create_engine
+from profilehooks import timecall
 
 
+@timecall
 def load_data():
     # read the data
     df = pd.read_csv(r"data_cleaned/restaurants_cleaned.csv", index_col=0)

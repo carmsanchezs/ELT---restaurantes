@@ -2,6 +2,8 @@
 # coding: utf-8
 
 import pandas as pd
+import numpy as np
+from profilehooks import timecall
 
 
 def set_category(price):
@@ -20,6 +22,7 @@ def set_category(price):
         return None
 
 
+@timecall
 def transform_data():
     """Change the necesary data, like location, price, cuisine, etc.
        based in business rules."""
@@ -63,7 +66,13 @@ def transform_data():
             ',', expand=True
         ).iloc[:, :5]
 
+    # Remove invalid telephone numbers or nulls
+    # only keep the number grather than 10 and lower than 13
+    restaurants = restaurants[(restaurants.PhoneNumber.str.len() >= 10) & (restaurants.PhoneNumber.str.len() <= 13)]
 
+    # Adding a field to restaurants with music in the description
+    restaurants['Music'] = np.where(restaurants.Description.str.contains('music'), 'Yes', 'No')
+    
     # Save the cleaned data to a CSV file
     # drop columns
     restaurants.drop(['Location', 'Price', 'Cuisine', 'FacilitiesAndServices'],
@@ -76,7 +85,7 @@ def transform_data():
         'Location', 'Country',
         'Price', 'Cuisine1', 'Cuisine2', 'FacilitiesAndServices1',
         'FacilitiesAndServices2', 'FacilitiesAndServices3',
-        'FacilitiesAndServices4', 'FacilitiesAndServices5']
+        'FacilitiesAndServices4', 'FacilitiesAndServices5', 'Music']
 
     restaurants.columns = cols
     restaurants.index.names = ['id']

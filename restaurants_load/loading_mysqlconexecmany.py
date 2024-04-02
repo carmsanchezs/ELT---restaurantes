@@ -47,9 +47,7 @@ def load_data():
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
 
-    for id, row in restaurants.iterrows():
-        cursor.execute( insert_query, (
-                        id,
+    data_to_insert = [( id,
                         row.Name,
                         row.Address,
                         row.Longitude,
@@ -69,8 +67,10 @@ def load_data():
                         row.FacilitiesAndServices3,
                         row.FacilitiesAndServices4,
                         row.FacilitiesAndServices5,
-                        row.Music))
+                        row.Music) for id, row in restaurants.iterrows()]
 
+    cursor.executemany(insert_query, data_to_insert)
+    
     conn.commit()
     cursor.close()
     conn.close()
