@@ -7,11 +7,13 @@ Transformación:
 - Filtrado de la información por "Award" (1 Star, 2 Stars, 3 Stars).
 - División de "localidad" en localidad y país.
 - Se categorizo la columna "Precio" en
+
       * $: Muy Barato
       * $$: Accesible
       * $$$: Normal
       * $$$$: Costoso
       * $$$$$: Muy costoso
+
 - Se dividio "Cuisine" en Cuisine1 y Cuisine2.
 - La columna “FacilitiesAndServices” se dividio en 5.
 - Remueve número de teléfono inválido o nulos.
@@ -99,9 +101,9 @@ Para ejecutar con éxito el proceso de ETL, sigue estos pasos:
 - Asegúrate de que tu base de datos esté en funcionamiento antes de ejecutar el script de procesamiento.
 - Revisa los comentarios del código y la documentación dentro del directorio `restaurants` para obtener más detalles sobre cada paso del proceso de ETL.
 - Existen 3 archivos "load" que se encargan de llevar la información ya limpia del dataframe a MySQL
-   1. loading_sqlalchemy.py -> que utiliza sqlalchemy el ORM
-   2. loading_mysqlcon.py -> que utiliza el conector nativo para conectarse a MySQL
-   3. loading_mysqlconexecmany.py -> similar al 2, sólo que implementa el "execute_many" para meter la información en bloques completos. 
+   - loading_sqlalchemy.py -> que utiliza sqlalchemy el ORM
+   - loading_mysqlcon.py -> que utiliza el conector nativo para conectarse a MySQL
+   - loading_mysqlconexecmany.py -> similar al 2, sólo que implementa el "execute_many" para meter la información en bloques completos. 
    De las 3 formas utilizadas, el que tuvo mejor rendimiento fue el de sqlalchemy. (compruebalo tú mismo)
 
 Happy ETL-ing!
